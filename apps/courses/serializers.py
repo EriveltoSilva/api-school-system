@@ -14,7 +14,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             'email':{'write_only':True}
         }
         model = Review
-        
+
         fields = (
             'id', 'course', 'name', 
             'email', 'comment', 'review', 

@@ -11,10 +11,15 @@ class Course(models.Model):
     class Meta:
         verbose_name = 'Course'
         verbose_name_plural='Courses'
-        ordering = ['title',]
+        ordering = ('-created_at',)
 
     def __str__(self) -> str:
-        return self.title
+        """string instance representation 
+
+        Returns:
+            str: string instance representation
+        """
+        return str(self.title)
     
 class Review(models.Model):
     course = models.ForeignKey(Course, related_name='reviews', on_delete=models.CASCADE)
@@ -29,7 +34,7 @@ class Review(models.Model):
     class Meta:
         verbose_name = 'Review'
         verbose_name_plural='Reviews'
-        ordering = ['name', 'created_at']
+        ordering = ('-created_at',)
         unique_together = ['email', 'course']
 
     def __str__(self) -> str:

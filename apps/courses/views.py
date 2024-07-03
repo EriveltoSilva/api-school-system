@@ -1,42 +1,51 @@
-from django.shortcuts import render
-
-from rest_framework.views import APIView
+"""
+views for courses and reviews endpoints
+"""
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import get_object_or_404
+from rest_framework.decorators import action
+from rest_framework import mixins
 from rest_framework.response import Response
-from rest_framework import status
 
 from .models import Course, Review
 from .serializers import CourseSerializer, ReviewSerializer
 
+class CoursesAPIView(ListCreateAPIView):
+    """
+        API endpoint that list and create courses.
+    """
+    queryset = Course.objects.all()      
+    serializer_class = CourseSerializer
 
-class CourseAPIView(APIView):
-    def get(self, request):
-        courses = Course.objects.all()
-        serializer = CourseSerializer(instance=courses, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    def post(self, request):
-        serializer = CourseSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({
-            "status":"success", 
-            "message":"Curso criado com sucesso!",
-            "data":serializer.data
-            }, status=status.HTTP_201_CREATED)
-    
+class CourseAPIView(RetrieveUpdateDestroyAPIView):
+    """
+        API endpoint that retrieve, update and destroy a specific course.
+    """
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
 
-class ReviewAPIView(APIView):
-    def get(self, request):
-        reviews = Review.objects.all()
-        serializer = ReviewSerializer(instance=reviews, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    def post(self, request):
-        serializer = ReviewSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({
-            "status": "success",
-            "message": "Review created successfully!",
-            "data":serializer.data
-        })
+
+
+class ReviewsAPIView(ListCreateAPIView):
+    """
+        API endpoint that list and create review.
+    """
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        if self.kwargs.get('course_pk'):
+            return self.queryset.filter(course_id= self.kwargs.get('course_pk'))
+        return self.queryset.all()
+
+class ReviewAPIView(RetrieveUpdateDestroyAPIView):
+    """
+        API endpoint that retrieve, update and destroy a specific review.
+    """
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+    def get_object(self):
+        if self.kwargs.get('course_pk') and self.kwargs.get('review_pk') :
+            return get_object_or_404(self.queryset.all(), course_id=self.kwargs.get('course_pk'), pk=self.kwargs.get('review_pk'))
+        return get_object_or_404(self.queryset.all(), pk=self.kwargs.get('pk'))
